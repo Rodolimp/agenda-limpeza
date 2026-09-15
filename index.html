@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Agenda de Limpeza</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -17,9 +16,7 @@
       color: #172033;
     }
 
-    h1 {
-      margin-bottom: 5px;
-    }
+    h1 { margin-bottom: 5px; }
 
     .subtitulo {
       color: #667085;
@@ -58,6 +55,7 @@
       border-radius: 16px;
       max-width: 850px;
       border: 1px solid #ddd;
+      margin-bottom: 25px;
     }
 
     label {
@@ -83,7 +81,7 @@
       border-radius: 10px;
       background: #087f5b;
       color: white;
-      font-size: 17px;
+      font-size: 16px;
       cursor: pointer;
     }
 
@@ -91,14 +89,56 @@
       opacity: 0.6;
     }
 
+    .danger {
+      background: #c92a2a;
+      margin-top: 0;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+
     #mensagem {
       margin-top: 15px;
       font-weight: bold;
     }
 
+    .lista {
+      max-width: 900px;
+    }
+
+    .cliente {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .cliente-info {
+      flex: 1;
+    }
+
+    .cliente-nome {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .cliente-detalhes {
+      color: #667085;
+      line-height: 1.5;
+    }
+
     @media (max-width: 600px) {
       .grid {
         grid-template-columns: 1fr;
+      }
+
+      .cliente {
+        align-items: flex-start;
       }
     }
   </style>
@@ -112,6 +152,8 @@
     Controle de lojas, próximas limpezas e vencimentos
   </div>
 
+  <!-- RESUMO -->
+
   <div class="grid">
 
     <div class="card">
@@ -120,28 +162,8 @@
     </div>
 
     <div class="card">
-      <div class="numero">0</div>
-      <div class="descricao">Limpezas nos próximos 7 dias</div>
-    </div>
-
-    <div class="card">
-      <div class="numero">0</div>
-      <div class="descricao">Atrasadas</div>
-    </div>
-
-    <div class="card">
-      <div class="numero">R$ 0,00</div>
-      <div class="descricao">Valor previsto nos próximos 30 dias</div>
-    </div>
-
-    <div class="card">
       <div class="numero" id="totalRio">0</div>
       <div class="descricao">Lojas em Rio das Ostras</div>
-    </div>
-
-    <div class="card">
-      <div class="numero">R$ 0,00</div>
-      <div class="descricao">Valor previsto para a semana</div>
     </div>
 
     <div class="card">
@@ -150,29 +172,50 @@
     </div>
 
     <div class="card">
-      <div class="numero">0</div>
-      <div class="descricao">Avulsos</div>
+      <div class="numero" id="totalSemana">0</div>
+      <div class="descricao">Limpezas nos próximos 7 dias</div>
     </div>
 
   </div>
+
+  <!-- CADASTRO -->
 
   <div class="formulario">
 
     <h2>Cadastrar cliente</h2>
 
     <label>Loja / cliente</label>
-    <input id="nome" type="text" placeholder="Ex.: Loja Central">
+    <input
+      id="nome"
+      type="text"
+      placeholder="Ex.: Loja Central"
+    >
 
     <label>Telefone</label>
-    <input id="telefone" type="text" placeholder="99999-9999">
+    <input
+      id="telefone"
+      type="text"
+      placeholder="99999-9999"
+    >
 
     <label>Cidade</label>
-    <input id="cidade" type="text" placeholder="Ex.: Macaé">
+    <input
+      id="cidade"
+      type="text"
+      placeholder="Ex.: Macaé"
+    >
 
     <label>Endereço</label>
-    <input id="endereco" type="text" placeholder="Endereço da loja">
+    <input
+      id="endereco"
+      type="text"
+      placeholder="Endereço da loja"
+    >
 
-    <button id="btnCadastrar" onclick="cadastrarCliente()">
+    <button
+      id="btnCadastrar"
+      onclick="cadastrarCliente()"
+    >
       Cadastrar cliente
     </button>
 
@@ -180,11 +223,28 @@
 
   </div>
 
+  <!-- LISTA DE CLIENTES -->
+
+  <div class="lista">
+
+    <div class="card">
+
+      <h2>Clientes cadastrados</h2>
+
+      <div id="listaClientes">
+        Carregando clientes...
+      </div>
+
+    </div>
+
+  </div>
+
+
 <script>
 
-  // ==========================================
+  // ==================================================
   // SUPABASE
-  // ==========================================
+  // ==================================================
 
   const SUPABASE_URL =
     "https://zomcrieauwncpfxefjau.supabase.co";
@@ -192,77 +252,212 @@
   const SUPABASE_ANON_KEY =
     "sb_publishable_HNDHgfM1mX-UHbUuApEvbg_x8xvEd4u";
 
-  const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
+  const supabaseClient =
+    window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
 
 
-  // ==========================================
+  // ==================================================
+  // ESCAPAR TEXTO
+  // ==================================================
+
+  function escapar(texto) {
+
+    return String(texto ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+
+  // ==================================================
   // CARREGAR CLIENTES
-  // ==========================================
+  // ==================================================
 
   async function carregarClientes() {
 
-    const { data, error } = await supabaseClient
-      .from("Clientes")
-      .select("*");
+    const lista =
+      document.getElementById("listaClientes");
+
+    lista.innerHTML = "Carregando clientes...";
+
+
+    const { data, error } =
+      await supabaseClient
+        .from("clientes")
+        .select("*")
+        .order("id", { ascending: false });
+
 
     if (error) {
-      console.error("Erro ao buscar clientes:", error);
 
-      document.getElementById("mensagem").textContent =
-        "Erro ao carregar clientes: " + error.message;
+      console.error(error);
+
+      lista.innerHTML =
+        "Erro ao carregar clientes: " +
+        escapar(error.message);
 
       return;
     }
 
-    console.log("Clientes encontrados:", data);
 
-    document.getElementById("totalClientes").textContent =
-      data.length;
+    const clientes = data || [];
 
 
-    // Rio das Ostras
-    const rio = data.filter(cliente =>
-      String(cliente.Cidade || "")
-        .toLowerCase()
-        .includes("rio das ostras")
+    // TOTAL
+
+    document.getElementById("totalClientes")
+      .textContent = clientes.length;
+
+
+    // RIO DAS OSTRAS
+
+    const rio = clientes.filter(cliente =>
+      String(
+        cliente.cidade ??
+        cliente.Cidade ??
+        ""
+      )
+      .toLowerCase()
+      .includes("rio das ostras")
     );
 
-    document.getElementById("totalRio").textContent =
-      rio.length;
+    document.getElementById("totalRio")
+      .textContent = rio.length;
 
 
-    // Macaé
-    const macae = data.filter(cliente =>
-      String(cliente.Cidade || "")
-        .toLowerCase()
-        .includes("maca")
+    // MACAÉ
+
+    const macae = clientes.filter(cliente =>
+      String(
+        cliente.cidade ??
+        cliente.Cidade ??
+        ""
+      )
+      .toLowerCase()
+      .includes("maca")
     );
 
-    document.getElementById("totalMacae").textContent =
-      macae.length;
+    document.getElementById("totalMacae")
+      .textContent = macae.length;
+
+
+    // LISTA VAZIA
+
+    if (clientes.length === 0) {
+
+      lista.innerHTML =
+        "<p>Nenhum cliente cadastrado.</p>";
+
+      return;
+    }
+
+
+    // MOSTRAR CLIENTES
+
+    lista.innerHTML = clientes.map(cliente => {
+
+      const id = cliente.id;
+
+      const nome =
+        cliente.nome ??
+        cliente.Nome ??
+        "";
+
+      const telefone =
+        cliente.telefone ??
+        cliente.Telefone ??
+        "";
+
+      const cidade =
+        cliente.cidade ??
+        cliente.Cidade ??
+        "";
+
+      const endereco =
+        cliente.endereco ??
+        cliente.Endereço ??
+        "";
+
+
+      return `
+
+        <div class="cliente">
+
+          <div class="cliente-info">
+
+            <div class="cliente-nome">
+              ${escapar(nome)}
+            </div>
+
+            <div class="cliente-detalhes">
+
+              ${telefone
+                ? "📞 " + escapar(telefone) + "<br>"
+                : ""
+              }
+
+              ${cidade
+                ? "📍 " + escapar(cidade) + "<br>"
+                : ""
+              }
+
+              ${endereco
+                ? "🏠 " + escapar(endereco)
+                : ""
+              }
+
+            </div>
+
+          </div>
+
+
+          <button
+            class="danger"
+            onclick="excluirCliente('${id}')"
+          >
+            Excluir
+          </button>
+
+        </div>
+
+      `;
+
+    }).join("");
+
   }
 
 
-  // ==========================================
+  // ==================================================
   // CADASTRAR CLIENTE
-  // ==========================================
+  // ==================================================
 
   async function cadastrarCliente() {
 
     const nome =
-      document.getElementById("nome").value.trim();
+      document.getElementById("nome")
+        .value
+        .trim();
 
     const telefone =
-      document.getElementById("telefone").value.trim();
+      document.getElementById("telefone")
+        .value
+        .trim();
 
     const cidade =
-      document.getElementById("cidade").value.trim();
+      document.getElementById("cidade")
+        .value
+        .trim();
 
     const endereco =
-      document.getElementById("endereco").value.trim();
+      document.getElementById("endereco")
+        .value
+        .trim();
+
 
     const mensagem =
       document.getElementById("mensagem");
@@ -272,6 +467,7 @@
 
 
     if (!nome) {
+
       mensagem.textContent =
         "Digite o nome da loja.";
 
@@ -285,24 +481,38 @@
       "Cadastrando...";
 
 
-    const { error } = await supabaseClient
-      .from("Clientes")
-      .insert([
-        {
-          Nome: nome,
-          Telefone: telefone,
-          Cidade: cidade,
-          Endereço: endereco
-        }
-      ]);
+    /*
+      IMPORTANTE:
+
+      Esta versão usa a tabela "clientes"
+      e as colunas:
+
+      nome
+      telefone
+      cidade
+      endereco
+    */
+
+    const { error } =
+      await supabaseClient
+        .from("clientes")
+        .insert([
+          {
+            nome: nome,
+            telefone: telefone,
+            cidade: cidade,
+            endereco: endereco
+          }
+        ]);
 
 
     if (error) {
 
-      console.error("Erro:", error);
+      console.error(error);
 
       mensagem.textContent =
-        "Erro ao cadastrar: " + error.message;
+        "Erro ao cadastrar: " +
+        error.message;
 
       botao.disabled = false;
 
@@ -322,13 +532,88 @@
 
     await carregarClientes();
 
+
     botao.disabled = false;
+
   }
 
 
-  // ==========================================
+  // ==================================================
+  // EXCLUIR CLIENTE
+  // ==================================================
+
+  async function excluirCliente(id) {
+
+    const { data, error: erroBusca } =
+      await supabaseClient
+        .from("clientes")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+
+    if (erroBusca) {
+
+      alert(
+        "Não foi possível localizar o cliente."
+      );
+
+      console.error(erroBusca);
+
+      return;
+    }
+
+
+    const nome =
+      data?.nome ??
+      data?.Nome ??
+      "este cliente";
+
+
+    const confirmar =
+      confirm(
+        `Tem certeza que deseja excluir "${nome}"?`
+      );
+
+
+    if (!confirmar) {
+      return;
+    }
+
+
+    const { error } =
+      await supabaseClient
+        .from("clientes")
+        .delete()
+        .eq("id", id);
+
+
+    if (error) {
+
+      console.error(error);
+
+      alert(
+        "Erro ao excluir o cliente:\n\n" +
+        error.message
+      );
+
+      return;
+    }
+
+
+    alert(
+      `"${nome}" foi excluído com sucesso.`
+    );
+
+
+    await carregarClientes();
+
+  }
+
+
+  // ==================================================
   // INICIAR
-  // ==========================================
+  // ==================================================
 
   carregarClientes();
 
