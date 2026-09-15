@@ -180,17 +180,17 @@
 
   </div>
 
-
 <script>
 
   // ==========================================
-  // COLOQUE AQUI OS DADOS DO SEU SUPABASE
+  // SUPABASE
   // ==========================================
 
-  const SUPABASE_URL = "COLE_AQUI_A_URL_DO_SEU_PROJETO";
+  const SUPABASE_URL =
+    "https://zomcrieauwncpfxefjau.supabase.co";
 
-  const SUPABASE_ANON_KEY = "COLE_AQUI_A_CHAVE_ANON_DO_SEU_PROJETO";
-
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_HNDHgfM1mX-UHbUuApEvbg_x8xvEd4u";
 
   const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
@@ -210,6 +210,10 @@
 
     if (error) {
       console.error("Erro ao buscar clientes:", error);
+
+      document.getElementById("mensagem").textContent =
+        "Erro ao carregar clientes: " + error.message;
+
       return;
     }
 
@@ -218,7 +222,8 @@
     document.getElementById("totalClientes").textContent =
       data.length;
 
-    // Conta lojas em Rio das Ostras
+
+    // Rio das Ostras
     const rio = data.filter(cliente =>
       String(cliente.Cidade || "")
         .toLowerCase()
@@ -228,7 +233,8 @@
     document.getElementById("totalRio").textContent =
       rio.length;
 
-    // Conta lojas em Macaé
+
+    // Macaé
     const macae = data.filter(cliente =>
       String(cliente.Cidade || "")
         .toLowerCase()
@@ -246,21 +252,38 @@
 
   async function cadastrarCliente() {
 
-    const nome = document.getElementById("nome").value.trim();
-    const telefone = document.getElementById("telefone").value.trim();
-    const cidade = document.getElementById("cidade").value.trim();
-    const endereco = document.getElementById("endereco").value.trim();
+    const nome =
+      document.getElementById("nome").value.trim();
 
-    const mensagem = document.getElementById("mensagem");
-    const botao = document.getElementById("btnCadastrar");
+    const telefone =
+      document.getElementById("telefone").value.trim();
+
+    const cidade =
+      document.getElementById("cidade").value.trim();
+
+    const endereco =
+      document.getElementById("endereco").value.trim();
+
+    const mensagem =
+      document.getElementById("mensagem");
+
+    const botao =
+      document.getElementById("btnCadastrar");
+
 
     if (!nome) {
-      mensagem.textContent = "Digite o nome da loja.";
+      mensagem.textContent =
+        "Digite o nome da loja.";
+
       return;
     }
 
+
     botao.disabled = true;
-    mensagem.textContent = "Cadastrando...";
+
+    mensagem.textContent =
+      "Cadastrando...";
+
 
     const { error } = await supabaseClient
       .from("Clientes")
@@ -273,24 +296,29 @@
         }
       ]);
 
+
     if (error) {
 
-      console.error(error);
+      console.error("Erro:", error);
 
       mensagem.textContent =
         "Erro ao cadastrar: " + error.message;
 
       botao.disabled = false;
+
       return;
     }
 
+
     mensagem.textContent =
       "Cliente cadastrado com sucesso!";
+
 
     document.getElementById("nome").value = "";
     document.getElementById("telefone").value = "";
     document.getElementById("cidade").value = "";
     document.getElementById("endereco").value = "";
+
 
     await carregarClientes();
 
