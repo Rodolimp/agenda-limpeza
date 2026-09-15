@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Agenda de Clientes</title>
 
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -23,7 +23,7 @@
 
     .container {
       max-width: 600px;
-      margin: 0 auto;
+      margin: auto;
       padding: 20px;
     }
 
@@ -40,19 +40,21 @@
       margin-bottom: 20px;
     }
 
-    input {
+    input,
+    select {
       width: 100%;
       padding: 14px;
       margin-bottom: 12px;
       border: 1px solid #ccc;
       border-radius: 10px;
       font-size: 16px;
+      background: white;
     }
 
     button {
       border: none;
       border-radius: 10px;
-      padding: 12px 16px;
+      padding: 13px 16px;
       font-size: 15px;
       cursor: pointer;
     }
@@ -68,12 +70,16 @@
       background: #117747;
     }
 
+    .btn-clientes {
+      width: 100%;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
     .cliente {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px;
-      padding: 15px 0;
+      padding: 16px 0;
       border-bottom: 1px solid #eee;
     }
 
@@ -81,30 +87,23 @@
       border-bottom: none;
     }
 
-    .cliente-info {
-      flex: 1;
-    }
-
     .cliente-nome {
       font-weight: bold;
-      font-size: 17px;
-      margin-bottom: 5px;
+      font-size: 18px;
+      margin-bottom: 8px;
     }
 
-    .cliente-telefone {
-      color: #666;
+    .cliente-info {
+      color: #555;
       font-size: 14px;
+      line-height: 1.7;
     }
 
     .btn-excluir {
       background: #dc3545;
       color: white;
+      margin-top: 10px;
       font-weight: bold;
-      flex-shrink: 0;
-    }
-
-    .btn-excluir:hover {
-      background: #b52a37;
     }
 
     .vazio {
@@ -123,339 +122,741 @@
       color: #666;
     }
 
+    .sucesso {
+      color: #168f5b;
+    }
+
     .erro {
       color: #dc3545;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      font-size: 14px;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="container">
+<div class="container">
 
-    <h1>📋 Agenda de Clientes</h1>
+  <h1>📋 Agenda de Clientes</h1>
 
-    <!-- CADASTRO -->
-    <div class="card">
+  <!-- ============================= -->
+  <!-- CADASTRO -->
+  <!-- ============================= -->
 
-      <h2>Novo cliente</h2>
+  <div class="card">
 
-      <input
-        type="text"
-        id="nome"
-        placeholder="Nome do cliente"
-      >
+    <h2>Novo cliente</h2>
 
-      <input
-        type="tel"
-        id="telefone"
-        placeholder="Telefone"
-      >
+    <label>Nome *</label>
+    <input
+      type="text"
+      id="nome"
+      placeholder="Nome do cliente"
+    >
 
-      <button
-        class="btn-cadastrar"
-        onclick="cadastrarCliente()"
-      >
-        Cadastrar cliente
-      </button>
+    <label>Telefone</label>
+    <input
+      type="tel"
+      id="telefone"
+      placeholder="Telefone"
+    >
 
-    </div>
+    <label>Cidade</label>
+    <input
+      type="text"
+      id="cidade"
+      placeholder="Cidade"
+    >
 
-    <!-- LISTA -->
-    <div class="card">
+    <label>Endereço</label>
+    <input
+      type="text"
+      id="endereco"
+      placeholder="Endereço"
+    >
 
-      <h2>Clientes</h2>
+    <label>Data do agendamento *</label>
+    <input
+      type="date"
+      id="data_agendamento"
+    >
 
-      <div id="status" class="status carregando">
-        Carregando clientes...
-      </div>
+    <label>Horário</label>
+    <input
+      type="time"
+      id="horario"
+    >
 
-      <div id="listaClientes"></div>
+    <label>Periodicidade *</label>
+    <select id="periodicidade">
+      <option value="">Selecione</option>
+      <option value="1">1</option>
+      <option value="7">7 dias</option>
+      <option value="15">15 dias</option>
+      <option value="30">30 dias</option>
+      <option value="60">60 dias</option>
+      <option value="90">90 dias</option>
+    </select>
 
-    </div>
+    <label>Data de pagamento</label>
+    <input
+      type="date"
+      id="data_pagamento"
+    >
+
+    <label>Valor</label>
+    <input
+      type="number"
+      id="valor"
+      placeholder="0,00"
+      step="0.01"
+      min="0"
+    >
+
+    <label>Tipo de serviço *</label>
+    <input
+      type="text"
+      id="tipo_servico"
+      placeholder="Ex.: Limpeza residencial"
+    >
+
+    <button
+      class="btn-cadastrar"
+      onclick="cadastrarCliente()"
+    >
+      Cadastrar cliente
+    </button>
 
   </div>
 
 
-  <script>
+  <!-- ============================= -->
+  <!-- CLIENTES -->
+  <!-- ============================= -->
 
-    // ============================================================
-    // SUPABASE
-    // ============================================================
+  <div class="card">
 
-    const SUPABASE_URL =
-      "https://zomcrieauwncpfxefjau.supabase.co";
+    <h2>Clientes cadastrados</h2>
 
-    const SUPABASE_ANON_KEY =
-      "sb_publishable_HNDHgfM1mX-UHbUuApEvbg_x8xvEd4u";
+    <button
+      class="btn-clientes"
+      onclick="carregarClientes()"
+    >
+      👥 Ver clientes cadastrados
+    </button>
 
-    const supabaseClient =
-      supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY
+    <div
+      id="status"
+      class="status"
+    ></div>
+
+    <div id="listaClientes"></div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  // ============================================================
+  // SUPABASE
+  // ============================================================
+
+  const SUPABASE_URL =
+    "https://zomcrieauwncpfxefjau.supabase.co";
+
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_HNDHgfM1mX-UHbUuApEvbg_x8xvEd4u";
+
+  const supabaseClient =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+
+  // ============================================================
+  // FUNÇÃO PARA MOSTRAR STATUS
+  // ============================================================
+
+  function mostrarStatus(texto, tipo) {
+
+    const status =
+      document.getElementById("status");
+
+    status.textContent = texto;
+
+    status.className =
+      "status " + tipo;
+  }
+
+
+  // ============================================================
+  // CARREGAR CLIENTES
+  // ============================================================
+
+  async function carregarClientes() {
+
+    const lista =
+      document.getElementById("listaClientes");
+
+    lista.innerHTML = "";
+
+    mostrarStatus(
+      "Carregando clientes...",
+      "carregando"
+    );
+
+
+    const { data, error } =
+      await supabaseClient
+        .from("clientes")
+        .select("*")
+        .order("nome", {
+          ascending: true
+        });
+
+
+    if (error) {
+
+      console.error(error);
+
+      mostrarStatus(
+        "Erro ao carregar clientes: " +
+        error.message,
+        "erro"
       );
 
-
-    // ============================================================
-    // CARREGAR CLIENTES
-    // ============================================================
-
-    async function carregarClientes() {
-
-      const lista =
-        document.getElementById("listaClientes");
-
-      const status =
-        document.getElementById("status");
-
-      status.textContent =
-        "Carregando clientes...";
-
-      status.className =
-        "status carregando";
-
-      const { data, error } =
-        await supabaseClient
-          .from("clientes")
-          .select("*")
-          .order("nome", { ascending: true });
-
-
-      if (error) {
-
-        console.error(error);
-
-        status.textContent =
-          "Erro ao carregar clientes: " +
-          error.message;
-
-        status.className =
-          "status erro";
-
-        return;
-      }
-
-
-      lista.innerHTML = "";
-
-
-      if (!data || data.length === 0) {
-
-        status.textContent = "";
-
-        lista.innerHTML =
-          '<div class="vazio">Nenhum cliente cadastrado.</div>';
-
-        return;
-      }
-
-
-      status.textContent =
-        data.length +
-        (data.length === 1
-          ? " cliente cadastrado"
-          : " clientes cadastrados");
-
-
-      data.forEach(cliente => {
-
-        const div =
-          document.createElement("div");
-
-        div.className = "cliente";
-
-
-        const info =
-          document.createElement("div");
-
-        info.className =
-          "cliente-info";
-
-
-        const nome =
-          document.createElement("div");
-
-        nome.className =
-          "cliente-nome";
-
-        nome.textContent =
-          cliente.nome || "Sem nome";
-
-
-        const telefone =
-          document.createElement("div");
-
-        telefone.className =
-          "cliente-telefone";
-
-        telefone.textContent =
-          cliente.telefone || "Sem telefone";
-
-
-        info.appendChild(nome);
-        info.appendChild(telefone);
-
-
-        // BOTÃO EXCLUIR
-        const botaoExcluir =
-          document.createElement("button");
-
-        botaoExcluir.className =
-          "btn-excluir";
-
-        botaoExcluir.textContent =
-          "Excluir";
-
-
-        botaoExcluir.onclick =
-          function() {
-
-            excluirCliente(
-              cliente.id,
-              cliente.nome
-            );
-
-          };
-
-
-        div.appendChild(info);
-
-        div.appendChild(botaoExcluir);
-
-        lista.appendChild(div);
-
-      });
-
+      return;
     }
 
 
-    // ============================================================
-    // CADASTRAR CLIENTE
-    // ============================================================
+    if (!data || data.length === 0) {
 
-    async function cadastrarCliente() {
+      mostrarStatus(
+        "",
+        ""
+      );
 
-      const nomeInput =
-        document.getElementById("nome");
+      lista.innerHTML =
+        '<div class="vazio">' +
+        'Nenhum cliente cadastrado.' +
+        '</div>';
 
-      const telefoneInput =
-        document.getElementById("telefone");
+      return;
+    }
 
+
+    mostrarStatus(
+      data.length +
+      (
+        data.length === 1
+          ? " cliente cadastrado"
+          : " clientes cadastrados"
+      ),
+      "sucesso"
+    );
+
+
+    data.forEach(cliente => {
+
+      const div =
+        document.createElement("div");
+
+      div.className = "cliente";
+
+
+      // NOME
 
       const nome =
-        nomeInput.value.trim();
+        document.createElement("div");
 
-      const telefone =
-        telefoneInput.value.trim();
+      nome.className =
+        "cliente-nome";
+
+      nome.textContent =
+        cliente.nome || "Sem nome";
 
 
-      if (!nome) {
+      // INFORMAÇÕES
 
-        alert(
-          "Digite o nome do cliente."
-        );
+      const info =
+        document.createElement("div");
 
-        nomeInput.focus();
+      info.className =
+        "cliente-info";
 
-        return;
+
+      let texto = "";
+
+
+      if (cliente.telefone) {
+        texto +=
+          "📞 " +
+          cliente.telefone +
+          "<br>";
       }
 
 
-      const { error } =
-        await supabaseClient
-          .from("clientes")
-          .insert([
-            {
-              nome: nome,
-              telefone: telefone
-            }
-          ]);
-
-
-      if (error) {
-
-        console.error(error);
-
-        alert(
-          "Erro ao cadastrar o cliente:\n\n" +
-          error.message
-        );
-
-        return;
+      if (cliente.cidade) {
+        texto +=
+          "📍 " +
+          cliente.cidade +
+          "<br>";
       }
 
 
-      alert(
-        "Cliente cadastrado com sucesso!"
+      if (cliente.endereco) {
+        texto +=
+          "🏠 " +
+          cliente.endereco +
+          "<br>";
+      }
+
+
+      if (cliente.data_agendamento) {
+
+        const dataAgendamento =
+          formatarData(
+            cliente.data_agendamento
+          );
+
+        texto +=
+          "📅 Agendamento: " +
+          dataAgendamento;
+
+        if (cliente.horario) {
+          texto +=
+            " às " +
+            cliente.horario.substring(0, 5);
+        }
+
+        texto += "<br>";
+      }
+
+
+      if (cliente.tipo_servico) {
+
+        texto +=
+          "🧹 Serviço: " +
+          cliente.tipo_servico +
+          "<br>";
+      }
+
+
+      if (cliente.periodicidade) {
+
+        texto +=
+          "🔄 Periodicidade: " +
+          cliente.periodicidade +
+          " dias<br>";
+      }
+
+
+      if (cliente.valor !== null &&
+          cliente.valor !== undefined) {
+
+        texto +=
+          "💰 Valor: R$ " +
+          Number(cliente.valor)
+            .toFixed(2)
+            .replace(".", ",") +
+          "<br>";
+      }
+
+
+      if (cliente.data_pagamento) {
+
+        texto +=
+          "💳 Pagamento: " +
+          formatarData(
+            cliente.data_pagamento
+          );
+      }
+
+
+      info.innerHTML = texto;
+
+
+      // BOTÃO EXCLUIR
+
+      const botaoExcluir =
+        document.createElement("button");
+
+      botaoExcluir.className =
+        "btn-excluir";
+
+      botaoExcluir.textContent =
+        "Excluir";
+
+
+      botaoExcluir.onclick =
+        function() {
+
+          excluirCliente(
+            cliente.id,
+            cliente.nome
+          );
+
+        };
+
+
+      div.appendChild(nome);
+
+      div.appendChild(info);
+
+      div.appendChild(
+        botaoExcluir
       );
 
+      lista.appendChild(div);
 
-      nomeInput.value = "";
-      telefoneInput.value = "";
+    });
+
+  }
 
 
-      await carregarClientes();
+  // ============================================================
+  // FORMATAR DATA
+  // ============================================================
 
+  function formatarData(data) {
+
+    if (!data) {
+      return "";
+    }
+
+    const partes =
+      data.split("-");
+
+    if (partes.length !== 3) {
+      return data;
+    }
+
+    return (
+      partes[2] +
+      "/" +
+      partes[1] +
+      "/" +
+      partes[0]
+    );
+  }
+
+
+  // ============================================================
+  // CADASTRAR CLIENTE
+  // ============================================================
+
+  async function cadastrarCliente() {
+
+    const nome =
+      document
+        .getElementById("nome")
+        .value
+        .trim();
+
+    const telefone =
+      document
+        .getElementById("telefone")
+        .value
+        .trim();
+
+    const cidade =
+      document
+        .getElementById("cidade")
+        .value
+        .trim();
+
+    const endereco =
+      document
+        .getElementById("endereco")
+        .value
+        .trim();
+
+    const data_agendamento =
+      document
+        .getElementById("data_agendamento")
+        .value;
+
+    const horario =
+      document
+        .getElementById("horario")
+        .value;
+
+    const periodicidade =
+      document
+        .getElementById("periodicidade")
+        .value;
+
+    const data_pagamento =
+      document
+        .getElementById("data_pagamento")
+        .value;
+
+    const valor =
+      document
+        .getElementById("valor")
+        .value;
+
+    const tipo_servico =
+      document
+        .getElementById("tipo_servico")
+        .value
+        .trim();
+
+
+    // ==========================
+    // VALIDAÇÕES
+    // ==========================
+
+    if (!nome) {
+
+      alert(
+        "Digite o nome do cliente."
+      );
+
+      document
+        .getElementById("nome")
+        .focus();
+
+      return;
     }
 
 
-    // ============================================================
-    // EXCLUIR CLIENTE
-    // ============================================================
-
-    async function excluirCliente(id, nome) {
-
-      const confirmar =
-        confirm(
-          `Tem certeza que deseja excluir o cliente "${nome}"?`
-        );
-
-
-      if (!confirmar) {
-
-        return;
-
-      }
-
-
-      const { error } =
-        await supabaseClient
-          .from("clientes")
-          .delete()
-          .eq("id", id);
-
-
-      if (error) {
-
-        console.error(error);
-
-        alert(
-          "Erro ao excluir o cliente:\n\n" +
-          error.message
-        );
-
-        return;
-
-      }
-
+    if (!data_agendamento) {
 
       alert(
-        `"${nome}" foi excluído com sucesso.`
+        "Informe a data do agendamento."
       );
 
-
-      await carregarClientes();
-
+      return;
     }
 
 
-    // ============================================================
-    // INICIAR
-    // ============================================================
+    if (!periodicidade) {
 
-    carregarClientes();
+      alert(
+        "Informe a periodicidade."
+      );
 
-  </script>
+      return;
+    }
+
+
+    if (!tipo_servico) {
+
+      alert(
+        "Informe o tipo de serviço."
+      );
+
+      return;
+    }
+
+
+    mostrarStatus(
+      "Cadastrando cliente...",
+      "carregando"
+    );
+
+
+    // ==========================
+    // INSERIR NO SUPABASE
+    // ==========================
+
+    const { data, error } =
+      await supabaseClient
+        .from("clientes")
+        .insert([
+          {
+            nome:
+              nome,
+
+            telefone:
+              telefone || null,
+
+            cidade:
+              cidade || null,
+
+            endereco:
+              endereco || null,
+
+            data_agendamento:
+              data_agendamento,
+
+            horario:
+              horario || null,
+
+            periodicidade:
+              Number(periodicidade),
+
+            data_pagamento:
+              data_pagamento || null,
+
+            valor:
+              valor
+                ? Number(valor)
+                : null,
+
+            tipo_servico:
+              tipo_servico,
+
+            user_id:
+              null
+          }
+        ])
+        .select();
+
+
+    if (error) {
+
+      console.error(error);
+
+      mostrarStatus(
+        "Erro ao cadastrar.",
+        "erro"
+      );
+
+      alert(
+        "Erro ao cadastrar o cliente:\n\n" +
+        error.message
+      );
+
+      return;
+    }
+
+
+    // ==========================
+    // SUCESSO
+    // ==========================
+
+    alert(
+      "Cliente cadastrado com sucesso!"
+    );
+
+
+    // LIMPAR FORMULÁRIO
+
+    document
+      .getElementById("nome")
+      .value = "";
+
+    document
+      .getElementById("telefone")
+      .value = "";
+
+    document
+      .getElementById("cidade")
+      .value = "";
+
+    document
+      .getElementById("endereco")
+      .value = "";
+
+    document
+      .getElementById("data_agendamento")
+      .value = "";
+
+    document
+      .getElementById("horario")
+      .value = "";
+
+    document
+      .getElementById("periodicidade")
+      .value = "";
+
+    document
+      .getElementById("data_pagamento")
+      .value = "";
+
+    document
+      .getElementById("valor")
+      .value = "";
+
+    document
+      .getElementById("tipo_servico")
+      .value = "";
+
+
+    // ATUALIZAR LISTA
+
+    await carregarClientes();
+
+  }
+
+
+  // ============================================================
+  // EXCLUIR CLIENTE
+  // ============================================================
+
+  async function excluirCliente(id, nome) {
+
+    const confirmar =
+      confirm(
+        'Tem certeza que deseja excluir "' +
+        nome +
+        '"?'
+      );
+
+
+    if (!confirmar) {
+      return;
+    }
+
+
+    mostrarStatus(
+      "Excluindo cliente...",
+      "carregando"
+    );
+
+
+    const { error } =
+      await supabaseClient
+        .from("clientes")
+        .delete()
+        .eq("id", id);
+
+
+    if (error) {
+
+      console.error(error);
+
+      alert(
+        "Erro ao excluir o cliente:\n\n" +
+        error.message
+      );
+
+      return;
+    }
+
+
+    alert(
+      '"' +
+      nome +
+      '" foi excluído com sucesso.'
+    );
+
+
+    await carregarClientes();
+
+  }
+
+
+  // ============================================================
+  // INICIAR
+  // ============================================================
+
+  // Não carrega automaticamente.
+  // O usuário pode clicar em
+  // "Ver clientes cadastrados".
+
+</script>
 
 </body>
 </html>
