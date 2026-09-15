@@ -1,462 +1,309 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Agenda de Limpeza</title>
-<style>
-:root{--bg:#f5f7fb;--card:#fff;--text:#182230;--muted:#667085;--line:#e4e7ec;--primary:#175cd3;--green:#039855;--red:#d92d20;--orange:#dc6803}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-header{background:#101828;color:white;padding:22px 18px}header h1{margin:0 0 4px;font-size:24px}header p{margin:0;color:#d0d5dd}
-main{max-width:1100px;margin:20px auto;padding:0 14px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}.stat{font-size:26px;font-weight:700}.label{font-size:13px;color:var(--muted);margin-top:4px}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:18px}.panel h2{font-size:18px;margin:0 0 14px}
-form{display:grid;grid-template-columns:2fr 1.3fr 1fr 1fr 1fr auto;gap:10px;align-items:end}
-label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}input,select,button{font:inherit}input,select{width:100%;padding:10px 11px;border:1px solid #d0d5dd;border-radius:9px;background:white}
-button{border:0;border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:600}.primary{background:var(--primary);color:white}.secondary{background:#eef4ff;color:#175cd3}.danger{background:#fff1f0;color:var(--red)}
-.toolbar{display:flex;gap:10px;justify-content:space-between;margin-bottom:12px}.toolbar input{max-width:360px}
-table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 8px;border-bottom:1px solid var(--line);font-size:14px}th{color:var(--muted);font-size:12px}.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:600}.ok{background:#ecfdf3;color:var(--green)}.soon{background:#fffaeb;color:var(--orange)}.late{background:#fef3f2;color:var(--red)}
-.actions{display:flex;gap:6px;flex-wrap:wrap}.empty{text-align:center;color:var(--muted);padding:28px}
-@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}form{grid-template-columns:1fr 1fr}.toolbar{display:block}.toolbar input{max-width:none;margin-bottom:8px}table{display:block;overflow-x:auto;white-space:nowrap}}
-@media(max-width:500px){.grid{grid-template-columns:1fr 1fr}.panel{padding:14px}form{grid-template-columns:1fr}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#101828">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Agenda Limpeza">
-<link rel="apple-touch-icon" href="icon-180.png">
+  <title>Agenda de Limpeza</title>
 
-</head>
-<body>
-<header><h1>Agenda de Limpeza</h1><p>Controle de lojas, próximas limpezas e vencimentos</p></header>
-<main>
-<section class="grid">
-<div class="card"><div class="stat" id="total">0</div><div class="label">Clientes cadastrados</div></div>
-<div class="card"><div class="stat" id="week">0</div><div class="label">Limpezas nos próximos 7 dias</div></div>
-<div class="card"><div class="stat" id="late">0</div><div class="label">Atrasadas</div></div>
-<div class="card"><div class="stat" id="monthValue">R$ 0</div><div class="label">Valor previsto nos próximos 30 dias</div></div>
-<div class="card"><div class="stat" id="rio">0</div><div class="label">Lojas em Rio das Ostras</div></div>
-<div class="card"><div class="stat" id="weekValue">R$ 0</div><div class="label">Valor previsto para a semana</div></div>
-<div class="card"><div class="stat" id="macae">0</div><div class="label">Lojas em Macaé</div></div>
-<div class="card"><div class="stat" id="avulsos">0</div><div class="label">Avulsos</div></div>
-</section>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<section class="panel">
-<h2>Cadastrar cliente</h2>
-<form id="form">
-<div><label>Loja / cliente</label><input id="name" required placeholder="Ex.: Loja Central"></div>
-<div><label>Telefone</label><input id="phone" placeholder="(22) 99999-9999"></div>
-<div><label>Cidade</label><select id="city"><option value="Rio das Ostras">Rio das Ostras</option><option value="Macaé Centro">Macaé Centro</option><option value="Macaé Cavaleiros">Macaé Cavaleiros</option><option value="Macaé Aeroporto">Macaé Aeroporto</option><option value="Rio de Janeiro">Rio de Janeiro</option><option value="Niterói">Niterói</option></select></div>
-<div class="field">
-<label for="endereco">Endereço da loja</label>
-<input id="endereco" name="endereco" type="text" placeholder="Rua, número, bairro, complemento">
-</div>
-<div><label>Data do agendamento</label><input id="schedDate" type="date" required></div>
-<div><label>Horário</label><input id="schedTime" type="time" required></div>
-<div><label>Periodicidade</label><select id="freq"><option value="7">Semanal</option><option value="14">Quinzenal</option><option value="30">Mensal</option><option value="45">45 dias</option><option value="60">Bimestral</option></select></div>
-<div><label>Data de pagamento</label><input id="payment" type="date"></div>
-<div><label>Valor (R$)</label><input id="value" type="number" min="0" step="0.01" placeholder="250"></div>
-<div><label>Tipo de serviço</label><select id="serviceType"><option value="recorrente">Recorrente</option><option value="avulso">Avulso</option></select></div>
-<button class="primary" type="submit">Adicionar</button>
-</form>
-</section>
-
-<section class="panel">
-<div class="view-tabs">
-<button class="view-btn active" data-view="day">Diária</button>
-<button class="view-btn" data-view="week">Semanal</button>
-</div>
-<div id="scheduleView"></div>
-</section>
-
-<section class="panel">
-<div class="tabs">
-<button class="tab active" data-city="Todas">Todas</button>
-<button class="tab" data-city="Rio das Ostras">Rio das Ostras</button>
-<button class="tab" data-city="Macaé">Macaé</button>
-</div>
-<div class="toolbar"><h2 style="margin:0">Clientes</h2><input id="search" placeholder="🔎 Buscar loja ou telefone"></div>
-<div id="tableWrap"></div>
-</section>
-</main>
-
-<script>
-const KEY="agenda_limpeza_v1";
-function storageLoad(){
-  try{
-    const raw=localStorage.getItem(KEY);
-    if(raw===null){ localStorage.setItem(KEY,"[]"); return []; }
-    const data=JSON.parse(raw);
-    return Array.isArray(data)?data:[];
-  }catch(e){ console.error("Falha ao carregar dados:",e); return []; }
-}
-function storageSave(data){
-  try{
-    localStorage.setItem(KEY,JSON.stringify(data));
-    return true;
-  }catch(e){
-    console.error("Falha ao salvar dados:",e);
-    alert("O navegador bloqueou o salvamento deste arquivo. Abra o HTML no Safari, não apenas na prévia do app Arquivos. Use Exportar backup para não perder dados.");
-    return false;
-  }
-}
-let clients=storageLoad();
-const $=id=>document.getElementById(id);
-let selectedCity="Todas";
-function save(){ if(storageSave(clients)){ render(); renderSchedule(); } }
-function addDays(date,n){let d=new Date(date+"T12:00:00");d.setDate(d.getDate()+Number(n));return d}
-function iso(d){return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
-function fmt(s){return new Date(s+"T12:00:00").toLocaleDateString("pt-BR")}
-function money(n){return Number(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
-function status(c){
- let d=new Date(c.next+"T12:00:00"), today=new Date();today.setHours(12,0,0,0);
- let diff=Math.round((d-today)/86400000);
- if(diff<0)return ["Atrasada","late"];
- if(diff<=7)return [diff===0?"Hoje":`Em ${diff} dia${diff>1?"s":""}`,"soon"];
- return ["Em dia","ok"];
-}
-function renderSchedule(){
- const now=new Date(); now.setHours(0,0,0,0);
- const days=[];
- if(window.viewMode==="week"){
-   for(let i=0;i<7;i++){let d=new Date(now);d.setDate(now.getDate()+i);days.push(d)}
- }else days.push(now);
- const relevant=clients.filter(c=>{
-   if(!c.schedDate)return false;
-   let d=new Date(c.schedDate+"T00:00:00");
-   return days.some(x=>d.getTime()===x.getTime()) && (selectedCity==="Todas"||c.city===selectedCity);
- }).sort((a,b)=>(a.schedDate+a.schedTime).localeCompare(b.schedDate+b.schedTime));
- $("scheduleView").innerHTML=days.map(d=>{
-   let key=iso(d), items=relevant.filter(c=>c.schedDate===key);
-   let title=d.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"2-digit"});
-   return `<div class="schedule-day"><div class="schedule-head">${title}</div>${
-     items.length?items.map(c=>`<div class="schedule-item"><div class="schedule-time">${c.schedTime||"--:--"}</div><div class="schedule-info"><strong>${esc(c.name)}</strong><br><small>${esc(c.city||"")} · ${esc(c.phone||"Sem telefone")} · ${money(c.value)}</small></div></div>`).join(""):`<div class="empty">Nenhum agendamento</div>`
-   }</div>`;
- }).join("");
-}
-function render(){
- const q=$("search").value.toLowerCase().trim();
- let list=clients.filter(c=>(c.name+" "+c.phone).toLowerCase().includes(q)).sort((a,b)=>a.next.localeCompare(b.next));
- $("total").textContent=clients.length;
- let today=new Date();today.setHours(12,0,0,0);let end7=new Date(today);end7.setDate(today.getDate()+7);let end30=new Date(today);end30.setDate(today.getDate()+30);
- $("week").textContent=clients.filter(c=>{let d=new Date(c.next+"T12:00:00");return d>=today&&d<=end7}).length;
- $("weekValue").textContent=money(clients.filter(c=>{let d=new Date(c.next+"T12:00:00");return d>=today&&d<=end7}).reduce((s,c)=>s+Number(c.value||0),0));
- $("late").textContent=clients.filter(c=>new Date(c.next+"T12:00:00")<today).length;
- $("monthValue").textContent=money(clients.filter(c=>{let d=new Date(c.next+"T12:00:00");return d>=today&&d<=end30}).reduce((s,c)=>s+Number(c.value||0),0));
- $("rio").textContent=clients.filter(c=>c.city==="Rio das Ostras").length;
- $("macae").textContent=clients.filter(c=>c.city==="Macaé").length;
- $("avulsos").textContent=clients.filter(c=>c.avulso===true).length;
- if(!list.length){$("tableWrap").innerHTML='<div class="empty">Nenhum cliente cadastrado.</div>';return}
- let rows=list.map(c=>{let [st,cl]=status(c);return `<tr>
-<td><strong>${esc(c.name)}</strong></td><td>${esc(c.city||"—")}</td><td>${esc(c.phone||"—")}</td><td>${fmt(c.next)}</td><td>${c.payment?fmt(c.payment):"—"}</td><td>${c.freq} dias</td><td>${money(c.value)}</td><td><span class="badge ${cl}">${st}</span></td>
-<td><div class="actions"><button class="secondary" onclick="done('${c.id}')">✓ Feita</button><button class="danger" onclick="del('${c.id}')">Excluir</button></div></td></tr>`}).join("");
- $("tableWrap").innerHTML=`<table><thead><tr><th>Cliente</th><th>Cidade</th><th>Telefone</th><th>Próxima</th><th>Pagamento</th><th>Intervalo</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead><tbody>${rows}</tbody></table>`;
-}
-function esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-$("form").onsubmit=e=>{e.preventDefault();let payment=$("payment").value;let schedDate=$("schedDate").value;let schedTime=$("schedTime").value;clients.push({id:crypto.randomUUID(),name:$("name").value,phone:$("phone").value,city:$("city").value,endereco:$("endereco").value,freq:Number($("freq").value),payment,value:Number($("value").value||0),avulso:$("serviceType").value==="avulso",next:schedDate,schedDate,schedTime});e.target.reset();save()}
-window.done=id=>{let c=clients.find(x=>x.id===id);if(!c)return;let base=c.schedDate||c.next;c.next=iso(addDays(base,c.freq));c.schedDate=c.next;save()}
-window.del=id=>{if(confirm("Excluir este cliente?")){clients=clients.filter(c=>c.id!==id);save()}}
-$("search").oninput=render;
-let viewMode="day";
-document.querySelectorAll(".tab").forEach(btn=>btn.onclick=()=>{
- selectedCity=btn.dataset.city;
- document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b===btn));
- render();
-});
-document.querySelectorAll(".view-btn").forEach(btn=>btn.onclick=()=>{
- viewMode=btn.dataset.view;
- document.querySelectorAll(".view-btn").forEach(b=>b.classList.toggle("active",b===btn));
- renderSchedule();
-});
-$("schedDate").value=iso(new Date());
-$("schedTime").value="08:00";
-render();
-renderSchedule();
-</script>
-
-<!-- Melhorias avançadas -->
-<style>
-  .enh-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
-  .enh-toolbar button,.enh-toolbar select{padding:9px 12px;border:1px solid #d5dbe3;border-radius:9px;background:#fff;font:inherit;cursor:pointer}
-  .enh-section{margin-top:16px;padding:14px;border:1px solid #e3e7ed;border-radius:12px;background:#fff}
-  .enh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-  .enh-card{padding:12px;border:1px solid #e4e8ee;border-radius:10px}
-  .enh-small{font-size:12px;color:#687386}
-  .enh-badge{display:inline-block;padding:3px 7px;border-radius:999px;background:#eef2f7;font-size:11px}
-  .enh-actions{display:flex;gap:6px;flex-wrap:wrap}
-  .enh-actions button{border:0;border-radius:7px;padding:6px 9px;cursor:pointer}
-  .enh-wa{background:#e8f7ec}
-  .enh-paid{background:#edf7ed}
-  .enh-pending{background:#fff4df}
-  @media(max-width:600px){.enh-toolbar{flex-direction:column}.enh-toolbar>*{width:100%}}
-</style>
-<div id="enhancements"></div>
-<script>
-(function(){
-  const KEY="agenda_limpeza_v1";
-  function load(){
-    try{
-      const x=JSON.parse(localStorage.getItem(KEY)||'[]');
-      return Array.isArray(x)?x:[];
-    }catch(e){return []}
-  }
-  function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
-  function phoneDigits(s){return String(s||'').replace(/\D/g,'');}
-  function money(n){return Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
-  function parseDate(s){
-    if(!s)return null;
-    const d=new Date(s.length===10?s+'T00:00:00':s);
-    return isNaN(d)?null:d;
-  }
-  function dateISO(d){return d.toISOString().slice(0,10);}
-  function today(){let d=new Date();d.setHours(0,0,0,0);return d;}
-  function weekEnd(){let d=today();d.setDate(d.getDate()+7);return d;}
-  function getCity(x){return x.cidade||x.city||''}
-  function isAvulso(x){return x.avulso===true || x.periodicidade==='Avulso' || x.tipo==='Avulso';}
-  function getDate(x){return x.proxima||x.proximaLimpeza||x.dataAgendamento||x.agendamento||x.data||''}
-  function getValue(x){return Number(x.valor||x.preco||0)}
-  function getPhone(x){return x.telefone||x.phone||''}
-  function getName(x){return x.cliente||x.loja||x.nome||'Sem nome'}
-  function getPaid(x){return x.pago===true || x.statusPagamento==='Pago'}
-  function setPaid(x,v){x.pago=v;x.statusPagamento=v?'Pago':'Pendente';}
-
-  function injectToolbar(){
-    const root=document.getElementById('enhancements'); if(!root)return;
-    const cities=['Todas','Rio das Ostras','Macaé Centro','Macaé Cavaleiros','Macaé Aeroporto','Rio de Janeiro','Niterói'];
-    root.innerHTML=`
-      <div class="enh-toolbar">
-        <select id="enhCity">${cities.map(c=>`<option>${c}</option>`).join('')}</select>
-        <button id="enhRoutes">🗺️ Rota do dia</button>
-        <button id="enhReport">💰 Relatório mensal</button>
-        <button id="enhExport">⬇️ Exportar backup</button>
-        <button id="enhImportBtn">⬆️ Importar backup</button><button id="enhTestSave">💾 Testar salvamento</button>
-        <input id="enhImport" type="file" accept=".json" style="display:none">
-      </div>
-      <div class="enh-section">
-        <b>Filtros e atalhos</b>
-        <div class="enh-grid" style="margin-top:10px">
-          <div class="enh-card"><div class="enh-small">Cidade</div><b id="enhCityCount">0 lojas</b></div>
-          <div class="enh-card"><div class="enh-small">Avulsos</div><b id="enhAvulsos">0</b></div>
-          <div class="enh-card"><div class="enh-small">Pendentes</div><b id="enhPend">0</b></div>
-          <div class="enh-card"><div class="enh-small">Receita prevista</div><b id="enhRevenue">R$ 0,00</b></div>
-        </div>
-      </div>
-      <div class="enh-section">
-        <b>Pagamentos e serviços</b>
-        <div class="enh-small" style="margin-top:6px">
-          Para a rota ficar precisa, cadastre o endereço da loja. Se não houver endereço, será usado o nome da loja + cidade.
-        </div>
-        <div id="enhList" style="margin-top:10px"></div>
-      </div>`;
-    document.getElementById('enhCity').onchange=render;
-    document.getElementById('enhRoutes').onclick=route;
-    document.getElementById('enhReport').onclick=report;
-    document.getElementById('enhExport').onclick=exportBackup;
-    document.getElementById('enhImportBtn').onclick=()=>document.getElementById('enhImport').click();
-    document.getElementById('enhTestSave').onclick=()=>{
-      try{
-        localStorage.setItem(KEY,JSON.stringify(load()));
-        alert("Salvamento funcionando neste navegador.");
-      }catch(e){
-        alert("Este ambiente está bloqueando o armazenamento. Abra o arquivo no Safari, não apenas na prévia do app Arquivos.");
-      }
-    };
-    document.getElementById('enhImport').onchange=importBackup;
-    render();
-  }
-
-  function filtered(){
-    const a=load(), c=document.getElementById('enhCity')?.value||'Todas';
-    return c==='Todas'?a:a.filter(x=>getCity(x)===c);
-  }
-  function render(){
-    const a=filtered();
-    const av=a.filter(isAvulso).length;
-    const pend=a.filter(x=>!getPaid(x)).length;
-    const revenue=a.reduce((s,x)=>s+getValue(x),0);
-    const cc=document.getElementById('enhCityCount'); if(cc)cc.textContent=a.length+' lojas';
-    const avs=document.getElementById('enhAvulsos'); if(avs)avs.textContent=av;
-    const pe=document.getElementById('enhPend'); if(pe)pe.textContent=pend;
-    const re=document.getElementById('enhRevenue'); if(re)re.textContent=money(revenue);
-    const list=document.getElementById('enhList'); if(!list)return;
-    if(!a.length){list.innerHTML='<div class="enh-small">Nenhum cliente neste filtro.</div>';return;}
-    list.innerHTML=a.map((x,i)=>{
-      const realIndex=load().indexOf(x), p=phoneDigits(getPhone(x));
-      return `<div class="enh-card" style="margin-bottom:8px">
-        <div><b>${esc(getName(x))}</b> <span class="enh-badge">${esc(getCity(x)||'Sem cidade')}</span> ${isAvulso(x)?'<span class="enh-badge">Avulso</span>':''}</div>
-        <div class="enh-small">${esc(getDate(x)||'Sem data')} · ${money(getValue(x))} · ${getPaid(x)?'Pago':'Pendente'}</div>
-        <div class="enh-actions" style="margin-top:7px">
-          ${p?`<button class="enh-wa" onclick="window.open('https://wa.me/55${p}','_blank')">📲 WhatsApp</button>`:''}
-          <button class="${getPaid(x)?'enh-paid':'enh-pending'}" onclick="window.__togglePay(${realIndex})">${getPaid(x)?'✓ Pago':'💳 Marcar pago'}</button>
-          ${isAvulso(x)?'':'<button onclick="window.__makeAvulso('+realIndex+')">➕ Tornar avulso</button>'}
-        </div>
-      </div>`;
-    }).join('');
-  }
-  window.__togglePay=function(i){let a=load(); if(!a[i])return;setPaid(a[i],!getPaid(a[i]));save(a);render();};
-  window.__makeAvulso=function(i){let a=load();if(!a[i])return;a[i].avulso=true;a[i].tipo='Avulso';a[i].periodicidade='Avulso';save(a);render();};
-
-  function route(){
-    const a=filtered().filter(x=>{
-      const d=parseDate(getDate(x)), t=today(); return d && d.toDateString()===t.toDateString();
-    });
-    if(!a.length){alert('Não há agendamentos para hoje nesta cidade.');return;}
-
-    const points=a.map(x=>{
-      const address=x.endereco||x.endereço||x.logradouro||x.rua||x.address||'';
-      return address ? `${address}, ${getCity(x)}` : `${getName(x)}, ${getCity(x)}`;
-    });
-
-    let url;
-    if(points.length===1){
-      url='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(points[0]);
-    }else{
-      url='https://www.google.com/maps/dir/?api=1'
-        +'&origin='+encodeURIComponent(points[0])
-        +'&destination='+encodeURIComponent(points[points.length-1])
-        +'&waypoints='+encodeURIComponent(points.slice(1,-1).join('|'))
-        +'&travelmode=driving';
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f4f6fa;
+      color: #172033;
     }
-    window.open(url,'_blank');
-  }
-  function report(){
-    const now=new Date(), m=now.getMonth(), y=now.getFullYear(), a=load();
-    const month=a.filter(x=>{const d=parseDate(getDate(x));return d&&d.getMonth()===m&&d.getFullYear()===y;});
-    const total=month.reduce((s,x)=>s+getValue(x),0), paid=month.filter(getPaid).reduce((s,x)=>s+getValue(x),0);
-    const pending=total-paid;
-    alert(`RELATÓRIO — ${now.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}\\n\\nServiços: ${month.length}\\nTotal: ${money(total)}\\nPago: ${money(paid)}\\nPendente: ${money(pending)}`);
-  }
-  function exportBackup(){
-    const blob=new Blob([JSON.stringify(load(),null,2)],{type:'application/json'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download='backup_agenda_limpeza_'+dateISO(new Date())+'.json';a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-  }
-  function importBackup(ev){
-    const f=ev.target.files?.[0];if(!f)return;
-    const r=new FileReader();
-    r.onload=()=>{try{const data=JSON.parse(r.result);if(!Array.isArray(data))throw 0;
-      if(confirm('Importar este backup vai substituir os dados atuais. Continuar?')){save(data);location.reload();}
-    }catch(e){alert('Arquivo de backup inválido.');}};
-    r.readAsText(f);
-  }
-  setTimeout(injectToolbar,300);
-})();
-</script>
+
+    h1 {
+      margin-bottom: 5px;
+    }
+
+    .subtitulo {
+      color: #667085;
+      margin-bottom: 25px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      max-width: 900px;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      background: white;
+      padding: 22px;
+      border-radius: 16px;
+      border: 1px solid #ddd;
+    }
+
+    .numero {
+      font-size: 42px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .descricao {
+      color: #667085;
+      font-size: 18px;
+    }
+
+    .formulario {
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      max-width: 850px;
+      border: 1px solid #ddd;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 14px 22px;
+      border: none;
+      border-radius: 10px;
+      background: #087f5b;
+      color: white;
+      font-size: 17px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+    }
+
+    #mensagem {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Agenda de Limpeza</h1>
+
+  <div class="subtitulo">
+    Controle de lojas, próximas limpezas e vencimentos
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="numero" id="totalClientes">0</div>
+      <div class="descricao">Clientes cadastrados</div>
+    </div>
+
+    <div class="card">
+      <div class="numero">0</div>
+      <div class="descricao">Limpezas nos próximos 7 dias</div>
+    </div>
+
+    <div class="card">
+      <div class="numero">0</div>
+      <div class="descricao">Atrasadas</div>
+    </div>
+
+    <div class="card">
+      <div class="numero">R$ 0,00</div>
+      <div class="descricao">Valor previsto nos próximos 30 dias</div>
+    </div>
+
+    <div class="card">
+      <div class="numero" id="totalRio">0</div>
+      <div class="descricao">Lojas em Rio das Ostras</div>
+    </div>
+
+    <div class="card">
+      <div class="numero">R$ 0,00</div>
+      <div class="descricao">Valor previsto para a semana</div>
+    </div>
+
+    <div class="card">
+      <div class="numero" id="totalMacae">0</div>
+      <div class="descricao">Lojas em Macaé</div>
+    </div>
+
+    <div class="card">
+      <div class="numero">0</div>
+      <div class="descricao">Avulsos</div>
+    </div>
+
+  </div>
+
+  <div class="formulario">
+
+    <h2>Cadastrar cliente</h2>
+
+    <label>Loja / cliente</label>
+    <input id="nome" type="text" placeholder="Ex.: Loja Central">
+
+    <label>Telefone</label>
+    <input id="telefone" type="text" placeholder="99999-9999">
+
+    <label>Cidade</label>
+    <input id="cidade" type="text" placeholder="Ex.: Macaé">
+
+    <label>Endereço</label>
+    <input id="endereco" type="text" placeholder="Endereço da loja">
+
+    <button id="btnCadastrar" onclick="cadastrarCliente()">
+      Cadastrar cliente
+    </button>
+
+    <div id="mensagem"></div>
+
+  </div>
 
 
 <script>
-/* Integração com Calendário do iPhone
-   O iOS não permite que uma página HTML crie eventos silenciosamente.
-   Estes botões geram arquivos .ics compatíveis com o Calendário Apple.
-*/
-(function(){
-  function pad(n){ return String(n).padStart(2,"0"); }
-  function esc(v){
-    return String(v ?? "")
-      .replace(/\\/g,"\\\\").replace(/\r?\n/g,"\\n")
-      .replace(/;/g,"\\;").replace(/,/g,"\\,");
-  }
-  function icsDate(date, time){
-    const d = date.split("-");
-    const t = (time || "09:00").split(":");
-    return d[0]+d[1]+d[2]+"T"+pad(t[0])+pad(t[1])+"00";
-  }
-  function downloadICS(filename, content){
-    const blob = new Blob([content], {type:"text/calendar;charset=utf-8"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = filename; a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),1000);
-  }
-  function eventICS(c){
-    const date = c.schedDate || c.next || c.proxima || c.dataAgendamento;
-    if(!date) return null;
-    const time = c.schedTime || "09:00";
-    const start = icsDate(date,time);
-    const parts = time.split(":").map(Number);
-    const endHour = parts[0] + Math.floor((parts[1]+60)/60);
-    const endMin = (parts[1]+60)%60;
-    const endTime = pad(endHour%24)+":"+pad(endMin);
-    const end = icsDate(date,endTime);
-    const name = c.name || c.cliente || c.loja || c.nome || "Limpeza";
-    const city = c.city || c.cidade || "";
-    const address = c.endereco || c.endereço || c.logradouro || c.rua || "";
-    const value = c.value || c.valor || "";
-    const desc = "Serviço de limpeza" + (value ? " | Valor: R$ "+value : "");
-    const location = [address,city].filter(Boolean).join(", ");
-    const uid = "agenda-limpeza-"+Date.now()+"-"+Math.random().toString(36).slice(2)+"@local";
-    return [
-      "BEGIN:VEVENT",
-      "UID:"+uid,
-      "DTSTAMP:"+new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d{3}Z$/,"Z"),
-      "DTSTART:"+start,
-      "DTEND:"+end,
-      "SUMMARY:"+esc("Limpeza - "+name),
-      "DESCRIPTION:"+esc(desc),
-      "LOCATION:"+esc(location),
-      "BEGIN:VALARM",
-      "TRIGGER:-P1D",
-      "ACTION:DISPLAY",
-      "DESCRIPTION:"+esc("Lembrete: limpeza de "+name),
-      "END:VALARM",
-      "END:VEVENT"
-    ].join("\r\n");
-  }
-  window.addClientToCalendar = function(index){
-    try{
-      const clients = JSON.parse(localStorage.getItem("agenda_limpeza_v1") || "[]");
-      const c = clients[index];
-      if(!c) return alert("Cliente não encontrado.");
-      if(!(c.schedDate || c.next || c.proxima || c.dataAgendamento))
-        return alert("Cadastre a data do agendamento primeiro.");
-      const ics = [
-        "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Agenda de Limpeza//iPhone//PT-BR",
-        "CALSCALE:GREGORIAN","METHOD:PUBLISH",eventICS(c),"END:VCALENDAR"
-      ].join("\r\n");
-      downloadICS("limpeza-"+(c.name||c.cliente||"cliente").replace(/[^\wÀ-ÿ-]+/g,"-")+".ics",ics);
-      alert("O arquivo foi gerado. Toque nele e escolha 'Adicionar ao Calendário' no iPhone.");
-    }catch(e){ alert("Não foi possível gerar o evento."); }
-  };
-  window.exportAgendaCalendar = function(){
-    try{
-      const clients = JSON.parse(localStorage.getItem("agenda_limpeza_v1") || "[]");
-      const events = clients.map(eventICS).filter(Boolean);
-      if(!events.length) return alert("Não há agendamentos com data para exportar.");
-      const ics = [
-        "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Agenda de Limpeza//iPhone//PT-BR",
-        "CALSCALE:GREGORIAN","METHOD:PUBLISH",events.join("\r\n"),"END:VCALENDAR"
-      ].join("\r\n");
-      downloadICS("agenda-limpeza.ics",ics);
-      alert("Arquivo gerado com "+events.length+" evento(s). Toque nele e escolha 'Adicionar ao Calendário'.");
-    }catch(e){ alert("Não foi possível exportar os eventos."); }
-  };
-  function addCalendarButtons(){
-    const forms = document.querySelectorAll("form");
-    forms.forEach(form=>{
-      if(form.querySelector(".iphone-calendar-tools")) return;
-      const box=document.createElement("div");
-      box.className="iphone-calendar-tools";
-      box.style.cssText="margin:14px 0;padding:12px;border:1px solid #ddd;border-radius:12px;background:#f7f7f7;";
-      box.innerHTML='<div style="font-weight:700;margin-bottom:8px;">📅 Calendário do iPhone</div><button type="button" onclick="exportAgendaCalendar()" style="padding:10px 12px;border:0;border-radius:9px;cursor:pointer;">Exportar vencimentos para o Calendário</button><div style="font-size:12px;margin-top:7px;color:#666;">Os eventos incluem alerta automático 1 dia antes.</div>';
-      form.appendChild(box);
-    });
-  }
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",addCalendarButtons);
-  else addCalendarButtons();
-})();
-</script>
+
+  // ==========================================
+  // COLOQUE AQUI OS DADOS DO SEU SUPABASE
+  // ==========================================
+
+  const SUPABASE_URL = "COLE_AQUI_A_URL_DO_SEU_PROJETO";
+
+  const SUPABASE_ANON_KEY = "COLE_AQUI_A_CHAVE_ANON_DO_SEU_PROJETO";
 
 
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch(console.error);
-  });
-}
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+
+  // ==========================================
+  // CARREGAR CLIENTES
+  // ==========================================
+
+  async function carregarClientes() {
+
+    const { data, error } = await supabaseClient
+      .from("Clientes")
+      .select("*");
+
+    if (error) {
+      console.error("Erro ao buscar clientes:", error);
+      return;
+    }
+
+    console.log("Clientes encontrados:", data);
+
+    document.getElementById("totalClientes").textContent =
+      data.length;
+
+    // Conta lojas em Rio das Ostras
+    const rio = data.filter(cliente =>
+      String(cliente.Cidade || "")
+        .toLowerCase()
+        .includes("rio das ostras")
+    );
+
+    document.getElementById("totalRio").textContent =
+      rio.length;
+
+    // Conta lojas em Macaé
+    const macae = data.filter(cliente =>
+      String(cliente.Cidade || "")
+        .toLowerCase()
+        .includes("maca")
+    );
+
+    document.getElementById("totalMacae").textContent =
+      macae.length;
+  }
+
+
+  // ==========================================
+  // CADASTRAR CLIENTE
+  // ==========================================
+
+  async function cadastrarCliente() {
+
+    const nome = document.getElementById("nome").value.trim();
+    const telefone = document.getElementById("telefone").value.trim();
+    const cidade = document.getElementById("cidade").value.trim();
+    const endereco = document.getElementById("endereco").value.trim();
+
+    const mensagem = document.getElementById("mensagem");
+    const botao = document.getElementById("btnCadastrar");
+
+    if (!nome) {
+      mensagem.textContent = "Digite o nome da loja.";
+      return;
+    }
+
+    botao.disabled = true;
+    mensagem.textContent = "Cadastrando...";
+
+    const { error } = await supabaseClient
+      .from("Clientes")
+      .insert([
+        {
+          Nome: nome,
+          Telefone: telefone,
+          Cidade: cidade,
+          Endereço: endereco
+        }
+      ]);
+
+    if (error) {
+
+      console.error(error);
+
+      mensagem.textContent =
+        "Erro ao cadastrar: " + error.message;
+
+      botao.disabled = false;
+      return;
+    }
+
+    mensagem.textContent =
+      "Cliente cadastrado com sucesso!";
+
+    document.getElementById("nome").value = "";
+    document.getElementById("telefone").value = "";
+    document.getElementById("cidade").value = "";
+    document.getElementById("endereco").value = "";
+
+    await carregarClientes();
+
+    botao.disabled = false;
+  }
+
+
+  // ==========================================
+  // INICIAR
+  // ==========================================
+
+  carregarClientes();
+
 </script>
 
 </body>
