@@ -7,23 +7,17 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    content="width=device-width, initial-scale=1.0"
   >
 
   <title>Agenda de Limpeza</title>
 
-  <!-- SUPABASE -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 
   <style>
 
     * {
       box-sizing: border-box;
-    }
-
-    html {
-      -webkit-text-size-adjust: 100%;
     }
 
     body {
@@ -32,11 +26,6 @@
       background: #f4f6fa;
       color: #172033;
     }
-
-
-    /* =====================================================
-       CABEÇALHO
-       ===================================================== */
 
     header {
       background: #101827;
@@ -55,21 +44,11 @@
       font-size: 18px;
     }
 
-
-    /* =====================================================
-       CONTAINER
-       ===================================================== */
-
     .container {
       max-width: 850px;
       margin: 0 auto;
       padding: 25px 18px 50px;
     }
-
-
-    /* =====================================================
-       PAINEL
-       ===================================================== */
 
     .dashboard {
       display: grid;
@@ -77,11 +56,6 @@
       gap: 20px;
       margin-bottom: 25px;
     }
-
-
-    /* =====================================================
-       CARDS
-       ===================================================== */
 
     .card-resumo {
       background: white;
@@ -92,44 +66,20 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
-
     /* =====================================================
-       CARD CLIENTES - CLICÁVEL
+       CARTÃO DE CLIENTES
        ===================================================== */
 
     .card-clientes {
-      width: 100%;
-      display: block;
-      text-align: left;
-
       cursor: pointer;
-
-      appearance: none;
-      -webkit-appearance: none;
-
-      color: #172033;
-      font-family: Arial, sans-serif;
-
-      touch-action: manipulation;
-
-      transition:
-        transform 0.15s ease,
-        box-shadow 0.15s ease;
-    }
-
-    .card-clientes:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+      -webkit-tap-highlight-color: transparent;
+      transition: 0.15s;
     }
 
     .card-clientes:active {
-      transform: scale(0.98);
+      transform: scale(0.97);
+      background: #f7f9fc;
     }
-
-    .card-clientes:focus {
-      outline: 3px solid rgba(22,143,91,0.25);
-    }
-
 
     .numero {
       font-size: 48px;
@@ -150,9 +100,8 @@
       font-weight: bold;
     }
 
-
     /* =====================================================
-       CARD NORMAL
+       CARDS
        ===================================================== */
 
     .card {
@@ -168,7 +117,6 @@
       margin-top: 0;
       font-size: 26px;
     }
-
 
     /* =====================================================
        FORMULÁRIO
@@ -188,13 +136,11 @@
       border-radius: 12px;
       font-size: 17px;
       outline: none;
-      background: white;
     }
 
     input:focus {
       border-color: #168f5b;
     }
-
 
     button {
       border: none;
@@ -203,9 +149,8 @@
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
-
 
     .btn-cadastrar {
       width: 100%;
@@ -214,17 +159,67 @@
       color: white;
     }
 
-    .btn-cadastrar:hover {
-      background: #117747;
+    .btn-cadastrar:active {
+      transform: scale(0.98);
     }
 
+    /* =====================================================
+       MODAL
+       ===================================================== */
+
+    .modal-fundo {
+      display: none;
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.60);
+      z-index: 99999;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .modal-fundo.aberto {
+      display: block;
+    }
+
+    .modal {
+      background: white;
+      width: 100%;
+      max-width: 650px;
+      margin: 20px auto;
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+    }
+
+    .modal-cabecalho {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .modal-cabecalho h2 {
+      margin: 0;
+      font-size: 25px;
+    }
+
+    .btn-fechar {
+      background: #eef1f5;
+      color: #172033;
+      font-size: 22px;
+      padding: 8px 13px;
+      min-width: 45px;
+    }
 
     /* =====================================================
-       LISTA
+       LISTA DE CLIENTES
        ===================================================== */
 
     #listaClientes {
-      margin-top: 10px;
+      margin-top: 15px;
     }
 
     .cliente {
@@ -251,13 +246,8 @@
     .cliente-detalhe {
       color: #68748a;
       font-size: 15px;
-      margin-top: 5px;
+      margin-top: 7px;
     }
-
-
-    /* =====================================================
-       BOTÃO EXCLUIR
-       ===================================================== */
 
     .btn-excluir {
       background: #dc3545;
@@ -266,21 +256,11 @@
       flex-shrink: 0;
     }
 
-    .btn-excluir:hover {
-      background: #b52a37;
-    }
-
-
-    /* =====================================================
-       VAZIO
-       ===================================================== */
-
     .vazio {
       text-align: center;
       color: #777;
       padding: 25px 10px;
     }
-
 
     /* =====================================================
        STATUS
@@ -304,88 +284,8 @@
       color: #68748a;
     }
 
-
     /* =====================================================
-       MODAL
-       ===================================================== */
-
-    .modal-fundo {
-      display: none;
-
-      position: fixed;
-
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-
-      width: 100%;
-      height: 100%;
-
-      background: rgba(0,0,0,0.55);
-
-      z-index: 99999;
-
-      padding: 20px;
-
-      overflow-y: auto;
-
-      -webkit-overflow-scrolling: touch;
-    }
-
-
-    .modal-fundo.aberto {
-      display: block;
-    }
-
-
-    .modal {
-      background: white;
-
-      width: 100%;
-      max-width: 650px;
-
-      margin: 30px auto;
-
-      border-radius: 22px;
-
-      padding: 25px;
-
-      box-shadow: 0 15px 50px rgba(0,0,0,0.25);
-    }
-
-
-    .modal-cabecalho {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      gap: 15px;
-
-      margin-bottom: 15px;
-    }
-
-
-    .modal-cabecalho h2 {
-      margin: 0;
-      font-size: 24px;
-    }
-
-
-    .btn-fechar {
-      background: #eef1f5;
-      color: #172033;
-
-      font-size: 20px;
-
-      padding: 8px 13px;
-
-      min-width: 45px;
-    }
-
-
-    /* =====================================================
-       RESPONSIVO
+       MOBILE
        ===================================================== */
 
     @media (max-width: 600px) {
@@ -403,7 +303,7 @@
       }
 
       .container {
-        padding: 20px 14px 40px;
+        padding: 20px 15px 40px;
       }
 
       .dashboard {
@@ -425,7 +325,7 @@
       }
 
       .clique {
-        font-size: 13px;
+        font-size: 12px;
       }
 
       .cliente-topo {
@@ -438,8 +338,7 @@
 
       .modal {
         margin: 10px auto;
-        padding: 20px;
-        border-radius: 18px;
+        padding: 18px;
       }
 
     }
@@ -450,7 +349,6 @@
 
 
 <body>
-
 
   <!-- =====================================================
        CABEÇALHO
@@ -469,7 +367,6 @@
 
   <div class="container">
 
-
     <!-- =====================================================
          PAINEL
          ===================================================== -->
@@ -477,14 +374,13 @@
     <div class="dashboard">
 
 
-      <!-- =================================================
-           CLIENTES CADASTRADOS
-           ================================================= -->
+      <!-- CLIENTES -->
 
-      <button
-        type="button"
-        id="cardClientes"
+      <div
         class="card-resumo card-clientes"
+        id="cardClientes"
+        role="button"
+        tabindex="0"
       >
 
         <div
@@ -502,12 +398,10 @@
           👆 Toque para ver os clientes
         </div>
 
-      </button>
+      </div>
 
 
-      <!-- =================================================
-           LIMPEZAS
-           ================================================= -->
+      <!-- LIMPEZAS -->
 
       <div class="card-resumo">
 
@@ -522,13 +416,14 @@
       </div>
 
 
-      <!-- =================================================
-           ATRASADAS
-           ================================================= -->
+      <!-- ATRASADAS -->
 
       <div class="card-resumo">
 
-        <div class="numero">
+        <div
+          class="numero"
+          id="totalAtrasadas"
+        >
           0
         </div>
 
@@ -539,9 +434,7 @@
       </div>
 
 
-      <!-- =================================================
-           VALOR
-           ================================================= -->
+      <!-- VALOR 30 DIAS -->
 
       <div class="card-resumo">
 
@@ -556,9 +449,7 @@
       </div>
 
 
-      <!-- =================================================
-           RIO DAS OSTRAS
-           ================================================= -->
+      <!-- RIO DAS OSTRAS -->
 
       <div class="card-resumo">
 
@@ -576,9 +467,7 @@
       </div>
 
 
-      <!-- =================================================
-           SEMANA
-           ================================================= -->
+      <!-- VALOR SEMANA -->
 
       <div class="card-resumo">
 
@@ -593,9 +482,7 @@
       </div>
 
 
-      <!-- =================================================
-           MACAÉ
-           ================================================= -->
+      <!-- MACAÉ -->
 
       <div class="card-resumo">
 
@@ -613,9 +500,7 @@
       </div>
 
 
-      <!-- =================================================
-           AVULSOS
-           ================================================= -->
+      <!-- AVULSOS -->
 
       <div class="card-resumo">
 
@@ -702,7 +587,6 @@
 
     </div>
 
-
   </div>
 
 
@@ -717,7 +601,6 @@
 
     <div class="modal">
 
-
       <div class="modal-cabecalho">
 
         <h2>
@@ -727,7 +610,7 @@
         <button
           type="button"
           class="btn-fechar"
-          id="btnFecharClientes"
+          id="btnFecharModal"
         >
           ✕
         </button>
@@ -745,11 +628,9 @@
 
       <div id="listaClientes"></div>
 
-
     </div>
 
   </div>
-
 
 
   <!-- =====================================================
@@ -758,163 +639,101 @@
 
   <script>
 
+    console.log("Agenda de Limpeza iniciando...");
 
-    // ============================================================
-    // CONFIGURAÇÃO SUPABASE
-    // ============================================================
+
+    // =====================================================
+    // SUPABASE
+    // =====================================================
 
     const SUPABASE_URL =
       "https://zomcrieauwncpfxefjau.supabase.co";
-
 
     const SUPABASE_ANON_KEY =
       "sb_publishable_HNDHgfM1mX-UHbUuApEvbg_x8xvEd4u";
 
 
-    // ============================================================
-    // CRIAR CONEXÃO
-    // ============================================================
-
-    let supabaseClient;
-
-
-    try {
-
-      supabaseClient =
-        window.supabase.createClient(
-          SUPABASE_URL,
-          SUPABASE_ANON_KEY
-        );
-
-    } catch (erro) {
-
-      console.error(
-        "Erro ao iniciar Supabase:",
-        erro
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
       );
 
-      alert(
-        "Não foi possível conectar ao banco de dados."
-      );
 
-    }
-
-
-    // ============================================================
+    // =====================================================
     // ELEMENTOS
-    // ============================================================
+    // =====================================================
 
     const totalClientes =
-      document.getElementById(
-        "totalClientes"
-      );
-
+      document.getElementById("totalClientes");
 
     const totalRio =
-      document.getElementById(
-        "totalRio"
-      );
-
+      document.getElementById("totalRio");
 
     const totalMacae =
-      document.getElementById(
-        "totalMacae"
-      );
-
+      document.getElementById("totalMacae");
 
     const cardClientes =
-      document.getElementById(
-        "cardClientes"
-      );
-
+      document.getElementById("cardClientes");
 
     const modalClientes =
-      document.getElementById(
-        "modalClientes"
-      );
+      document.getElementById("modalClientes");
 
-
-    const btnFecharClientes =
-      document.getElementById(
-        "btnFecharClientes"
-      );
-
-
-    const listaClientes =
-      document.getElementById(
-        "listaClientes"
-      );
-
-
-    const statusLista =
-      document.getElementById(
-        "statusLista"
-      );
-
-
-    const statusCadastro =
-      document.getElementById(
-        "statusCadastro"
-      );
-
+    const btnFecharModal =
+      document.getElementById("btnFecharModal");
 
     const btnCadastrar =
-      document.getElementById(
-        "btnCadastrar"
-      );
+      document.getElementById("btnCadastrar");
+
+    const listaClientes =
+      document.getElementById("listaClientes");
+
+    const statusLista =
+      document.getElementById("statusLista");
+
+    const statusCadastro =
+      document.getElementById("statusCadastro");
 
 
-    // ============================================================
-    // ABRIR LISTA DE CLIENTES
-    // ============================================================
+    // =====================================================
+    // ABRIR MODAL
+    // =====================================================
 
-    async function abrirClientes() {
+    function abrirClientes() {
 
-      console.log(
-        "Abrindo lista de clientes..."
-      );
+      console.log("Abrindo clientes...");
 
+      modalClientes.classList.add("aberto");
 
-      modalClientes.classList.add(
-        "aberto"
-      );
+      document.body.style.overflow = "hidden";
 
-
-      document.body.style.overflow =
-        "hidden";
-
-
-      await carregarListaClientes();
+      carregarListaClientes();
 
     }
 
 
-    // ============================================================
-    // FECHAR LISTA
-    // ============================================================
+    // =====================================================
+    // FECHAR MODAL
+    // =====================================================
 
     function fecharClientes() {
 
-      modalClientes.classList.remove(
-        "aberto"
-      );
+      console.log("Fechando clientes...");
 
+      modalClientes.classList.remove("aberto");
 
-      document.body.style.overflow =
-        "";
+      document.body.style.overflow = "";
 
     }
 
 
-    // ============================================================
-    // CLIQUE NO CARD
-    // ============================================================
+    // =====================================================
+    // EVENTO DO CARTÃO
+    // =====================================================
 
     cardClientes.addEventListener(
       "click",
-      function(event) {
-
-        event.preventDefault();
+      function () {
 
         abrirClientes();
 
@@ -922,13 +741,35 @@
     );
 
 
-    // ============================================================
-    // BOTÃO FECHAR
-    // ============================================================
+    // Também permite abrir usando Enter
+    // caso o cartão esteja selecionado.
 
-    btnFecharClientes.addEventListener(
+    cardClientes.addEventListener(
+      "keydown",
+      function (event) {
+
+        if (
+          event.key === "Enter" ||
+          event.key === " "
+        ) {
+
+          event.preventDefault();
+
+          abrirClientes();
+
+        }
+
+      }
+    );
+
+
+    // =====================================================
+    // BOTÃO FECHAR
+    // =====================================================
+
+    btnFecharModal.addEventListener(
       "click",
-      function() {
+      function () {
 
         fecharClientes();
 
@@ -936,13 +777,13 @@
     );
 
 
-    // ============================================================
-    // FECHAR TOCANDO FORA DO MODAL
-    // ============================================================
+    // =====================================================
+    // CLICAR FORA DO MODAL
+    // =====================================================
 
     modalClientes.addEventListener(
       "click",
-      function(event) {
+      function (event) {
 
         if (
           event.target === modalClientes
@@ -956,146 +797,179 @@
     );
 
 
-    // ============================================================
-    // FECHAR COM ESC
-    // ============================================================
-
-    document.addEventListener(
-      "keydown",
-      function(event) {
-
-        if (
-          event.key === "Escape"
-        ) {
-
-          fecharClientes();
-
-        }
-
-      }
-    );
-
-
-    // ============================================================
+    // =====================================================
     // CARREGAR PAINEL
-    // ============================================================
+    // =====================================================
 
     async function carregarPainel() {
 
-      if (!supabaseClient) {
+      console.log("Carregando painel...");
+
+
+      const resultado =
+        await supabaseClient
+          .from("clientes")
+          .select(
+            "id,nome,telefone,cidade,endereco"
+          )
+          .order(
+            "nome",
+            {
+              ascending: true
+            }
+          );
+
+
+      if (resultado.error) {
+
+        console.error(
+          "Erro ao carregar painel:",
+          resultado.error
+        );
 
         return;
 
       }
 
 
-      try {
+      const clientes =
+        resultado.data || [];
 
-        const resultado =
-          await supabaseClient
-            .from("clientes")
-            .select(
-              "id,nome,telefone,cidade,endereco"
-            )
-            .order(
-              "nome",
-              {
-                ascending: true
-              }
+
+      // TOTAL
+
+      totalClientes.textContent =
+        clientes.length;
+
+
+      // RIO DAS OSTRAS
+
+      const rio =
+        clientes.filter(
+          function (cliente) {
+
+            return (
+              (cliente.cidade || "")
+                .toLowerCase()
+                .includes("rio das ostras")
             );
 
-
-        if (resultado.error) {
-
-          console.error(
-            "Erro ao carregar painel:",
-            resultado.error
-          );
-
-          return;
-
-        }
-
-
-        const clientes =
-          resultado.data || [];
-
-
-        // TOTAL
-
-        totalClientes.textContent =
-          clientes.length;
-
-
-        // RIO DAS OSTRAS
-
-        const rio =
-          clientes.filter(
-            function(cliente) {
-
-              return (
-                cliente.cidade || ""
-              )
-                .toLowerCase()
-                .includes(
-                  "rio das ostras"
-                );
-
-            }
-          );
-
-
-        totalRio.textContent =
-          rio.length;
-
-
-        // MACAÉ
-
-        const macae =
-          clientes.filter(
-            function(cliente) {
-
-              return (
-                cliente.cidade || ""
-              )
-                .toLowerCase()
-                .includes(
-                  "maca"
-                );
-
-            }
-          );
-
-
-        totalMacae.textContent =
-          macae.length;
-
-
-      } catch (erro) {
-
-        console.error(
-          "Erro inesperado no painel:",
-          erro
+          }
         );
 
-      }
+
+      totalRio.textContent =
+        rio.length;
+
+
+      // MACAÉ
+
+      const macae =
+        clientes.filter(
+          function (cliente) {
+
+            return (
+              (cliente.cidade || "")
+                .toLowerCase()
+                .includes("maca")
+            );
+
+          }
+        );
+
+
+      totalMacae.textContent =
+        macae.length;
+
+
+      console.log(
+        "Painel carregado:",
+        clientes
+      );
 
     }
 
 
-    // ============================================================
-    // CARREGAR LISTA DE CLIENTES
-    // ============================================================
+    // =====================================================
+    // CARREGAR LISTA
+    // =====================================================
 
     async function carregarListaClientes() {
 
-      if (!supabaseClient) {
+      statusLista.textContent =
+        "Carregando clientes...";
+
+      statusLista.className =
+        "status carregando";
+
+      listaClientes.innerHTML =
+        "";
+
+
+      const resultado =
+        await supabaseClient
+          .from("clientes")
+          .select(
+            "id,nome,telefone,cidade,endereco"
+          )
+          .order(
+            "nome",
+            {
+              ascending: true
+            }
+          );
+
+
+      if (resultado.error) {
+
+        console.error(
+          "Erro na lista:",
+          resultado.error
+        );
+
 
         statusLista.textContent =
-          "Erro de conexão com o banco.";
+          "Erro ao carregar clientes.";
 
         statusLista.className =
           "status erro";
+
+
+        listaClientes.innerHTML =
+          `
+            <div class="vazio">
+              ${resultado.error.message}
+            </div>
+          `;
+
+        return;
+
+      }
+
+
+      const clientes =
+        resultado.data || [];
+
+
+      console.log(
+        "Clientes encontrados:",
+        clientes
+      );
+
+
+      if (
+        clientes.length === 0
+      ) {
+
+        statusLista.textContent =
+          "";
+
+        listaClientes.innerHTML =
+          `
+            <div class="vazio">
+              Nenhum cliente cadastrado.
+            </div>
+          `;
 
         return;
 
@@ -1103,276 +977,146 @@
 
 
       statusLista.textContent =
-        "Carregando clientes...";
-
+        clientes.length +
+        (
+          clientes.length === 1
+            ? " cliente cadastrado"
+            : " clientes cadastrados"
+        );
 
       statusLista.className =
-        "status carregando";
+        "status sucesso";
 
 
-      listaClientes.innerHTML =
-        "";
+      clientes.forEach(
+        function (cliente) {
 
-
-      try {
-
-        const resultado =
-          await supabaseClient
-            .from("clientes")
-            .select(
-              "id,nome,telefone,cidade,endereco"
-            )
-            .order(
-              "nome",
-              {
-                ascending: true
-              }
-            );
-
-
-        if (resultado.error) {
-
-          console.error(
-            "Erro Supabase:",
-            resultado.error
-          );
-
-
-          statusLista.textContent =
-            "Erro ao carregar clientes: " +
-            resultado.error.message;
-
-
-          statusLista.className =
-            "status erro";
-
-
-          return;
+          criarClienteNaLista(cliente);
 
         }
-
-
-        const clientes =
-          resultado.data || [];
-
-
-        // NENHUM CLIENTE
-
-        if (
-          clientes.length === 0
-        ) {
-
-          statusLista.textContent =
-            "";
-
-
-          listaClientes.innerHTML =
-            `
-              <div class="vazio">
-                Nenhum cliente cadastrado.
-              </div>
-            `;
-
-
-          return;
-
-        }
-
-
-        // QUANTIDADE
-
-        statusLista.textContent =
-          clientes.length +
-          (
-            clientes.length === 1
-              ? " cliente cadastrado"
-              : " clientes cadastrados"
-          );
-
-
-        statusLista.className =
-          "status sucesso";
-
-
-        // MOSTRAR CLIENTES
-
-        clientes.forEach(
-          function(cliente) {
-
-            criarClienteNaLista(
-              cliente
-            );
-
-          }
-        );
-
-
-      } catch (erro) {
-
-        console.error(
-          "Erro inesperado:",
-          erro
-        );
-
-
-        statusLista.textContent =
-          "Erro inesperado ao carregar os clientes.";
-
-
-        statusLista.className =
-          "status erro";
-
-      }
+      );
 
     }
 
 
-    // ============================================================
+    // =====================================================
     // CRIAR CLIENTE NA LISTA
-    // ============================================================
+    // =====================================================
 
-    function criarClienteNaLista(
-      cliente
-    ) {
+    function criarClienteNaLista(cliente) {
 
       const div =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       div.className =
         "cliente";
 
 
       const topo =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       topo.className =
         "cliente-topo";
 
 
       const info =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
 
       // NOME
 
       const nome =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       nome.className =
         "cliente-nome";
-
 
       nome.textContent =
         cliente.nome ||
         "Sem nome";
 
-
-      info.appendChild(
-        nome
-      );
+      info.appendChild(nome);
 
 
       // TELEFONE
 
-      const telefone =
-        document.createElement(
-          "div"
+      if (
+        cliente.telefone
+      ) {
+
+        const telefone =
+          document.createElement("div");
+
+        telefone.className =
+          "cliente-detalhe";
+
+        telefone.textContent =
+          "📞 " +
+          cliente.telefone;
+
+        info.appendChild(
+          telefone
         );
 
-
-      telefone.className =
-        "cliente-detalhe";
-
-
-      telefone.textContent =
-        "📞 " +
-        (
-          cliente.telefone ||
-          "Telefone não informado"
-        );
-
-
-      info.appendChild(
-        telefone
-      );
+      }
 
 
       // CIDADE
 
-      const cidade =
-        document.createElement(
-          "div"
+      if (
+        cliente.cidade
+      ) {
+
+        const cidade =
+          document.createElement("div");
+
+        cidade.className =
+          "cliente-detalhe";
+
+        cidade.textContent =
+          "📍 " +
+          cliente.cidade;
+
+        info.appendChild(
+          cidade
         );
 
-
-      cidade.className =
-        "cliente-detalhe";
-
-
-      cidade.textContent =
-        "📍 " +
-        (
-          cliente.cidade ||
-          "Cidade não informada"
-        );
-
-
-      info.appendChild(
-        cidade
-      );
+      }
 
 
       // ENDEREÇO
 
-      const endereco =
-        document.createElement(
-          "div"
+      if (
+        cliente.endereco
+      ) {
+
+        const endereco =
+          document.createElement("div");
+
+        endereco.className =
+          "cliente-detalhe";
+
+        endereco.textContent =
+          "🏠 " +
+          cliente.endereco;
+
+        info.appendChild(
+          endereco
         );
 
-
-      endereco.className =
-        "cliente-detalhe";
-
-
-      endereco.textContent =
-        "🏠 " +
-        (
-          cliente.endereco ||
-          "Endereço não informado"
-        );
-
-
-      info.appendChild(
-        endereco
-      );
+      }
 
 
       // BOTÃO EXCLUIR
 
       const botao =
-        document.createElement(
-          "button"
-        );
-
+        document.createElement("button");
 
       botao.type =
         "button";
 
-
       botao.className =
         "btn-excluir";
-
 
       botao.textContent =
         "Excluir";
@@ -1380,10 +1124,7 @@
 
       botao.addEventListener(
         "click",
-        function(event) {
-
-          event.stopPropagation();
-
+        function () {
 
           excluirCliente(
             cliente.id,
@@ -1394,75 +1135,54 @@
       );
 
 
-      topo.appendChild(
-        info
-      );
+      topo.appendChild(info);
 
+      topo.appendChild(botao);
 
-      topo.appendChild(
-        botao
-      );
+      div.appendChild(topo);
 
-
-      div.appendChild(
-        topo
-      );
-
-
-      listaClientes.appendChild(
-        div
-      );
+      listaClientes.appendChild(div);
 
     }
 
 
-    // ============================================================
+    // =====================================================
     // CADASTRAR CLIENTE
-    // ============================================================
+    // =====================================================
+
+    btnCadastrar.addEventListener(
+      "click",
+      cadastrarCliente
+    );
+
 
     async function cadastrarCliente() {
 
       const nomeInput =
-        document.getElementById(
-          "nome"
-        );
-
+        document.getElementById("nome");
 
       const telefoneInput =
-        document.getElementById(
-          "telefone"
-        );
-
+        document.getElementById("telefone");
 
       const cidadeInput =
-        document.getElementById(
-          "cidade"
-        );
-
+        document.getElementById("cidade");
 
       const enderecoInput =
-        document.getElementById(
-          "endereco"
-        );
+        document.getElementById("endereco");
 
 
       const nome =
         nomeInput.value.trim();
 
-
       const telefone =
         telefoneInput.value.trim();
-
 
       const cidade =
         cidadeInput.value.trim();
 
-
       const endereco =
         enderecoInput.value.trim();
 
-
-      // VALIDAR
 
       if (!nome) {
 
@@ -1470,9 +1190,7 @@
           "Digite o nome da loja ou cliente."
         );
 
-
         nomeInput.focus();
-
 
         return;
 
@@ -1482,7 +1200,6 @@
       statusCadastro.textContent =
         "Cadastrando...";
 
-
       statusCadastro.className =
         "status carregando";
 
@@ -1491,126 +1208,93 @@
         true;
 
 
-      try {
-
-        const resultado =
-          await supabaseClient
-            .from("clientes")
-            .insert([
-              {
-                nome: nome,
-                telefone: telefone,
-                cidade: cidade,
-                endereco: endereco
-              }
-            ]);
+      const resultado =
+        await supabaseClient
+          .from("clientes")
+          .insert([
+            {
+              nome: nome,
+              telefone: telefone,
+              cidade: cidade,
+              endereco: endereco
+            }
+          ]);
 
 
-        if (resultado.error) {
-
-          console.error(
-            "Erro ao cadastrar:",
-            resultado.error
-          );
+      btnCadastrar.disabled =
+        false;
 
 
-          statusCadastro.textContent =
-            "Erro ao cadastrar.";
+      if (
+        resultado.error
+      ) {
 
-
-          statusCadastro.className =
-            "status erro";
-
-
-          alert(
-            "Erro ao cadastrar o cliente:\n\n" +
-            resultado.error.message
-          );
-
-
-          return;
-
-        }
-
-
-        // LIMPAR CAMPOS
-
-        nomeInput.value =
-          "";
-
-        telefoneInput.value =
-          "";
-
-        cidadeInput.value =
-          "";
-
-        enderecoInput.value =
-          "";
+        console.error(
+          "Erro ao cadastrar:",
+          resultado.error
+        );
 
 
         statusCadastro.textContent =
-          "Cliente cadastrado com sucesso!";
-
+          "Erro ao cadastrar.";
 
         statusCadastro.className =
-          "status sucesso";
+          "status erro";
 
 
         alert(
-          "Cliente cadastrado com sucesso!"
+          "Erro ao cadastrar o cliente:\n\n" +
+          resultado.error.message
         );
 
 
-        // ATUALIZAR PAINEL
-
-        await carregarPainel();
-
-
-        // ABRIR LISTA
-
-        await abrirClientes();
-
-
-      } catch (erro) {
-
-        console.error(
-          "Erro inesperado:",
-          erro
-        );
-
-
-        alert(
-          "Ocorreu um erro inesperado."
-        );
-
-
-      } finally {
-
-        btnCadastrar.disabled =
-          false;
+        return;
 
       }
+
+
+      // LIMPAR
+
+      nomeInput.value =
+        "";
+
+      telefoneInput.value =
+        "";
+
+      cidadeInput.value =
+        "";
+
+      enderecoInput.value =
+        "";
+
+
+      statusCadastro.textContent =
+        "Cliente cadastrado com sucesso!";
+
+      statusCadastro.className =
+        "status sucesso";
+
+
+      alert(
+        "Cliente cadastrado com sucesso!"
+      );
+
+
+      // ATUALIZAR PAINEL
+
+      await carregarPainel();
+
+
+      // ABRIR CLIENTES
+
+      abrirClientes();
 
     }
 
 
-    // ============================================================
-    // BOTÃO CADASTRAR
-    // ============================================================
-
-    btnCadastrar.addEventListener(
-      "click",
-      function() {
-
-        cadastrarCliente();
-
-      }
-    );
-
-
-    // ============================================================
+    // =====================================================
     // EXCLUIR CLIENTE
-    // ============================================================
+    // =====================================================
 
     async function excluirCliente(
       id,
@@ -1632,80 +1316,63 @@
       }
 
 
-      try {
-
-        const resultado =
-          await supabaseClient
-            .from("clientes")
-            .delete()
-            .eq(
-              "id",
-              id
-            );
-
-
-        if (resultado.error) {
-
-          console.error(
-            "Erro ao excluir:",
-            resultado.error
+      const resultado =
+        await supabaseClient
+          .from("clientes")
+          .delete()
+          .eq(
+            "id",
+            id
           );
 
 
-          alert(
-            "Erro ao excluir o cliente:\n\n" +
-            resultado.error.message
-          );
-
-
-          return;
-
-        }
-
-
-        alert(
-          '"' +
-          nome +
-          '" foi excluído com sucesso.'
-        );
-
-
-        // ATUALIZAR PAINEL
-
-        await carregarPainel();
-
-
-        // ATUALIZAR LISTA
-
-        await carregarListaClientes();
-
-
-      } catch (erro) {
+      if (
+        resultado.error
+      ) {
 
         console.error(
-          "Erro inesperado:",
-          erro
+          "Erro ao excluir:",
+          resultado.error
         );
 
 
         alert(
-          "Ocorreu um erro ao excluir o cliente."
+          "Erro ao excluir o cliente:\n\n" +
+          resultado.error.message
         );
 
+
+        return;
+
       }
+
+
+      alert(
+        '"' +
+        nome +
+        '" foi excluído com sucesso.'
+      );
+
+
+      // ATUALIZAR PAINEL
+
+      await carregarPainel();
+
+
+      // ATUALIZAR LISTA
+
+      await carregarListaClientes();
 
     }
 
 
-    // ============================================================
+    // =====================================================
     // INICIAR
-    // ============================================================
+    // =====================================================
 
     carregarPainel();
 
-
   </script>
-
 
 </body>
 
